@@ -299,11 +299,10 @@ grid.arrange(p1, p2, p3, nrow = 2)
 
 # ROC FUNCTION 
 ROC_curve <- function (logistic.model) {
-  library(caret)
   # make CV model
-  ctrl <- trainControl(method = "repeatedcv", number = 10, repeats = 5, 
+  ctrl <- caret::trainControl(method = "repeatedcv", number = 10, repeats = 5, 
                        savePredictions = TRUE, classProbs = TRUE)
-  cvmod2 <- train(aggressive ~ .,  data = logistic.model$data, 
+  cvmod2 <- caret::train(aggressive ~ .,  data = logistic.model$data, 
                   method="glm", family="binomial",
                   trControl = ctrl, tuneLength = 5)
   # mean CV prediction
@@ -317,16 +316,12 @@ ROC_curve <- function (logistic.model) {
       mean_preds$'0'[i] <- 1
       mean_preds$'1'[i] <- 0
     }
-    
   }
-  
   Spec <- Sens <- NULL
   firsttable1 <- mean_preds[, -1]
   colnames(firsttable1)[1] <- "predicted.prob"
   firsttable <- firsttable1[, 2:3]
   rownames(firsttable) <- firsttable1$predicted.prob
-  
-  
   secondtable <- firsttable
   for (i in 1:length(secondtable[, 1])) {
     secondtable[i, 1] <- (sum(firsttable[, 1]) - sum(firsttable[(1:i), 
@@ -339,9 +334,9 @@ ROC_curve <- function (logistic.model) {
   rownames(secondtable)[1] <- "0"
   auc <- 0
   for (i in 1:(nrow(secondtable) - 1)) {
-    auc <- auc + (secondtable[i, 1] - secondtable[(i + 1), 
-                                                  1]) * 0.5 * (secondtable[i, 2] + secondtable[(i + 
-                                                                                                  1), 2])
+    auc <- auc + (secondtable[i, 1] - 
+                    secondtable[(i + 1), 1]) * 0.5 * 
+      (secondtable[i, 2] + secondtable[(i + 1), 2])
   }
   p <- ggplot( 
     data = secondtable[nrow(secondtable):1, ], aes(Spec, Sens)) +
@@ -394,7 +389,7 @@ type_agg <- do.call(rbind, type_agg)
 # For no control test
 #type_agg <- type_agg[!(type_agg$Group %in% "control"), ]
 
-# 0. Check correlations between chromosomes
+# 0. Check correlations between chromosomes ----------------------------------------------
 M <- cor(type_agg[, 4:25], method = "spearman")
 col <- colorRampPalette(c("#BB4444", "#EE9988", "#FFFFFF", "#77AADD", "#4477AA"))
 p.mat <- psych::corr.test(data.frame(type_agg[, 4:25]), adjust="none")$p
