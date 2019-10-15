@@ -14,19 +14,8 @@ library(feather)
 library(tidyverse)
 
 setwd("D:/SNP 6/Rohdaten/cel")
-
-l1 <- grep(list.files(), pattern='.CEL', inv=T, value=T)
-l2 <- grep(l1, pattern='.png', inv=T, value=T)
-l3 <- grep(l2, pattern='.ARR', inv=T, value=T)
-l4 <- grep(l3, pattern='.pdf', inv=T, value=T)
-l5 <- grep(l4, pattern='.csv', inv=T, value=T)
-l6 <- grep(l5, pattern='CHP', inv=T, value=T)
-l7 <- grep(l6, pattern='preprocessed', inv=T, value=T)
-folders <- l7
-
-
-
-
+folders <- grep(list.files(), pattern = '\\.CEL|\\.png|\\.ARR|\\.pdf|\\.csv|\\CHP|preprocessed', 
+                inv = TRUE, value = TRUE)
 
 # Loop for probe to segments ---------------------------------------------------
 
@@ -71,24 +60,19 @@ for( i in 1:length(folders)){
   
 }
 
-#values <- readRDS(paste0(folders[1], "/probe.values.rds"))
-
 # Load all Segment values in a data frame --------------------------------------
 pheno <-  read.csv("2018 10 10 Wien PRCa Update_prepared.csv", 
                    stringsAsFactors = FALSE)
-folder.files <- apply(as.matrix(folders, ncol = 1), 
-                      1, 
-                      function(x){
-                        x <- strsplit(x, "_", fixed = TRUE)[[1]][3]
-                        return(x)
-                      })
-folder.files[208:length(folders)] <- apply(
-  as.matrix(folders[208:length(folders)], ncol = 1), 
-  1, 
-  function(x){
-    x <- strsplit(x, "_", fixed = TRUE)[[1]][2]
-    return(x)
-  })
+folder.files <- sapply(folders, 
+                       function(x){
+                         x <- strsplit(x, "_", fixed = TRUE)[[1]][3]
+                         return(x)
+                       })
+folder.files[208:length(folders)] <- sapply(folders[208:length(folders)],
+                                            function(x){
+                                              x <- strsplit(x, "_", fixed = TRUE)[[1]][2]
+                                              return(x)
+                                            })
 
 seg <- fread(paste0(folders[1],"/segments2.txt"))
 seg <- as.data.frame(seg[, -11])
